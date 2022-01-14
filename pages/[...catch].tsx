@@ -137,7 +137,7 @@ export default function Index() {
             </Button>
           </Box>
           <Typography variant="body1" component="p">
-            With Spider-Man's identity now revealed, our friendly neighborhood
+            With Spider-Mans identity now revealed, our friendly neighborhood
             web-slinger is unmasked and no longer able to separate his normal
             life as Peter Parker from the high stakes of being a superhero.
           </Typography>
@@ -145,7 +145,7 @@ export default function Index() {
       </Box>
 
       {["TRENDING RIGHT NOW", "ORIGINAL", "COOL ACTION"].map((e, x) => (
-        <Box sx={{ padding: 4 }}>
+        <Box sx={{ padding: 4 }} key={e}>
           <Box display="flex" justifyContent={"space-between"} mb={4}>
             <Typography variant="h4" component="h2">
               {e}
