@@ -189,7 +189,7 @@ export default function Index() {
             >
               {shows?.map((d, i) => (
                 <SwiperSlide key={i}>
-                  {x % 2 == 0 ? <ShowBox {...d} /> : <ShowBox {...d} potrait />}
+                  {x % 2 == 0 ? <ShowBox key={d.id} {...d} /> : <ShowBox key={d.id} {...d} potrait />}
                 </SwiperSlide>
               ))}
             </Swiper>

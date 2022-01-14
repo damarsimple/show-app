@@ -1,3 +1,4 @@
+import { useQuery, gql } from "@apollo/client";
 import {
   Close,
   ClosedCaption,
@@ -21,6 +22,7 @@ import withRouter, { WithRouterProps } from "next/dist/client/with-router";
 import React, { useRef, useState, useEffect } from "react";
 import ShowBox from "../../components/ShowBox";
 import { useNavbarStore } from "../../stores/navbar";
+import { Show } from "../../type";
 
 function Slug({ router }: WithRouterProps) {
   const { slug } = router.query;
@@ -55,6 +57,24 @@ function Slug({ router }: WithRouterProps) {
       setShow(true);
     };
   }, []);
+
+  const { data: { shows } = {} } = useQuery<{ shows: Show[] }>(gql`
+  query Shows {
+  shows {
+    id
+    name
+    description
+    image_potrait
+    image_wide
+    rating
+    year
+    genres {
+      id
+      name
+    }
+  }
+}
+  `)
 
   return (
     <Box
@@ -104,7 +124,7 @@ function Slug({ router }: WithRouterProps) {
               <Close />
             </IconButton>
           </Tooltip>
-          <ShowBox />
+          {shows?.map((show) => (<ShowBox key={show.id} {...show} />))}
         </Box>
       )}
       {show && (
