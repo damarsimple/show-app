@@ -15,18 +15,56 @@ import {
 } from "@mui/material";
 import { Copyright } from "../components/Copyright";
 import Image from "next/image";
+import { gql, useMutation } from "@apollo/client";
+import { Auth } from "../type";
+import { useUserStore } from "../stores/user";
+import { useAuthStore } from "../stores/auth";
+import { useRouter } from "next/router";
 const theme = createTheme();
 
 export default function SignInSide() {
+  const { setUser } = useUserStore();
+  const { setToken } = useAuthStore();
+  const { push } = useRouter();
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     // eslint-disable-next-line no-console
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    handleLogin({
+      variables: {
+        username: data.get("email"),
+        password: data.get("password"),
+      }
+    }).then(({ data }) => {
+      if (!data) return;
+      const { login } = data;
+
+      if (login.status) {
+        setUser(login.user);
+        setToken(login.token ?? "");
+        push("/home")
+      } else {
+        alert(login.message);
+      }
+
+    })
   };
+
+  const [handleLogin] = useMutation<{ login: Auth }>(gql`
+  mutation Mutation($username: String!, $password: String!) {
+  login(username: $username, password: $password) {
+    token
+    status
+    message
+    user {
+      id
+      username
+      email
+      plan
+    }
+  }
+}
+  `)
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>

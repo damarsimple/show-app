@@ -76,18 +76,28 @@ const pagesUnauthenticated = [
   },
 ];
 
-const settings = ["Admin", "Logout"];
+
 
 const RENDER_EXCEPT = ["/login", "/register"];
 
 function MyApp({ Component, pageProps }: AppProps) {
   const { user, setUser } = useUserStore();
-  const { token } = useAuthStore()
+  const { token, setToken } = useAuthStore()
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
 
   const { show, setTransparent, transparent } = useNavbarStore();
 
+
+  const settings = [{
+    name: "Logout",
+    handler: () => {
+
+      setToken("");
+      setUser(null);
+
+    }
+  }];
 
   const handleOpenUserMenu = (event: any) => {
     setAnchorElUser(event.currentTarget);
@@ -221,14 +231,14 @@ function MyApp({ Component, pageProps }: AppProps) {
                   </Box>
 
                   <Box sx={{ flexGrow: 0 }}>
-                    <Tooltip title="Open settings">
+                    {user && <Tooltip title="Open settings">
                       <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                         <Avatar
-                          alt="Remy Sharp"
+                          alt={user.username}
                           src="/static/images/avatar/2.jpg"
                         />
                       </IconButton>
-                    </Tooltip>
+                    </Tooltip>}
                     <Menu
                       sx={{ mt: "45px" }}
                       id="menu-appbar"
@@ -246,8 +256,8 @@ function MyApp({ Component, pageProps }: AppProps) {
                       onClose={handleCloseUserMenu}
                     >
                       {settings.map((setting) => (
-                        <MenuItem key={setting} onClick={handleCloseNavMenu}>
-                          <Typography textAlign="center">{setting}</Typography>
+                        <MenuItem key={setting.name} onClick={setting.handler}>
+                          <Typography textAlign="center">{setting.name}</Typography>
                         </MenuItem>
                       ))}
                     </Menu>
