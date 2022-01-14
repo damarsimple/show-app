@@ -51,6 +51,8 @@ export default function SignInSide() {
 }
   `);
 
+  console.log(genres);
+
   const [handleRegister, { loading }] = useMutation<{ register: Auth }>(gql`
   mutation Mutation($username: String!, $email: String!, $password: String!, $plan: PLAN!, $genres: [Int]!) {
   register(username: $username, email: $email, password: $password, plan: $plan, genres: $genres) {
@@ -66,6 +68,8 @@ export default function SignInSide() {
   }
 }
   `)
+
+  const [data, setData] = useState<Record<string, string>>({})
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     setErrorMessage("");
@@ -92,7 +96,7 @@ export default function SignInSide() {
       return;
     }
 
-    console.log(submitted);
+    setData(submitted);
     next();
   };
 
@@ -100,7 +104,13 @@ export default function SignInSide() {
   const next = () => {
     if (steps.length - 1 == activeStep) {
 
-      handleRegister({}).then(({ data }) => {
+      handleRegister({
+        variables: {
+          ...data,
+          genres: selectedGenres.map(x => x.id),
+          plan: selectedPlan
+        }
+      }).then(({ data }) => {
 
         if (!data) return;
 
@@ -312,7 +322,7 @@ export default function SignInSide() {
                       <Chip
                         key={e.id}
                         variant="outlined"
-                        label="Action"
+                        label={e.name}
                         onDelete={() => {
                           setSelectedGenres([e, ...selectedGenres])
                         }}
@@ -326,16 +336,11 @@ export default function SignInSide() {
                   </Typography>
                   <TextField label="Search Genres" variant="standard" />
                   <Box>
-                    <Chip
-                      variant="outlined"
-                      label="Action"
-                      onDelete={() => { }}
-                    />
                     {selectedGenres?.map(e => (
                       <Chip
                         key={e.id}
                         variant="outlined"
-                        label="Action"
+                        label={e.name}
                         onDelete={() => {
                           setSelectedGenres(selectedGenres.filter(e => e !== e))
                         }}
