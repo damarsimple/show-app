@@ -108,7 +108,7 @@ export default function SignInSide() {
         variables: {
           ...data,
           genres: selectedGenres.map(x => x.id),
-          plan: selectedPlan
+          plan: selectedPlan?.toUpperCase()
         }
       }).then(({ data }) => {
 
