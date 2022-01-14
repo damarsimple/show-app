@@ -25,8 +25,11 @@ import { useState, useEffect } from "react";
 import { useNavbarStore } from "../stores/navbar";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import { ApolloProvider } from "@apollo/client";
+import { ApolloProvider, gql } from "@apollo/client";
 import { client } from "../libraries/apollo";
+import { useUserStore } from "../stores/user";
+import { useAuthStore } from "../stores/auth";
+import { User } from "../type";
 
 const theme = createTheme({
   palette: {
@@ -61,19 +64,31 @@ const pages = [
     href: "/home/library",
   },
 ];
+
+const pagesUnauthenticated = [
+  {
+    title: "Login",
+    href: "/login/",
+  },
+  {
+    title: "Register",
+    href: "/register",
+  },
+];
+
 const settings = ["Admin", "Logout"];
 
 const RENDER_EXCEPT = ["/login", "/register"];
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const { user, setUser } = useUserStore();
+  const { token } = useAuthStore()
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
 
   const { show, setTransparent, transparent } = useNavbarStore();
 
-  const handleOpenNavMenu = (event: any) => {
-    setAnchorElNav(event.currentTarget);
-  };
+
   const handleOpenUserMenu = (event: any) => {
     setAnchorElUser(event.currentTarget);
   };
@@ -93,6 +108,27 @@ function MyApp({ Component, pageProps }: AppProps) {
       window.removeEventListener("scroll", listenToScroll);
     };
   }, []);
+
+  useEffect(() => {
+    if (token) {
+      client.query<{ me: User }>({
+        query: gql`
+        query GetMe {
+  me {
+    id
+    username
+    email
+    plan
+  }
+}
+`
+      }).then(({ data }) => {
+        if (data.me) {
+          setUser(data.me)
+        }
+      })
+    }
+  }, [token])
 
   const listenToScroll = () => {
     const winScroll =
@@ -152,7 +188,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                         display: { xs: "block", md: "none" },
                       }}
                     >
-                      {pages.map((page) => (
+                      {(user ? pages : pagesUnauthenticated).map((page) => (
                         <MenuItem key={page.href} onClick={handleCloseNavMenu}>
                           <Typography textAlign="center">{page.title}</Typography>
                         </MenuItem>
@@ -170,7 +206,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                     </Typography>
                   </IconButton>
                   <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-                    {pages.map((page) => (
+                    {(user ? pages : pagesUnauthenticated).map((page) => (
                       <Button
                         key={page.href}
                         onClick={() => {

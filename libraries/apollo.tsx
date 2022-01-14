@@ -6,8 +6,10 @@ import { relayStylePagination } from "@apollo/client/utilities";
 import { useAuthStore } from "../stores/auth";
 import { onError } from "@apollo/client/link/error";
 
+const SERVER_URL = "https://showbe.damaral.my.id";
+
 const uploadLink = createUploadLink({
-    uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
+    uri: SERVER_URL,
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -37,48 +39,13 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
 export const client = new ApolloClient({
     link: authLink.concat(errorLink).concat(uploadLink as unknown as ApolloLink),
-    uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
+    uri: SERVER_URL,
     cache: new InMemoryCache({
         typePolicies: {
             Query: {
                 fields: {
                     ...[
-                        "transactions",
-                        "courses",
-                        "quizzes",
-                        "tutorings",
-                        "submissions",
-                        "classtypes",
-                        "vouchers",
-                        "questions",
-                        "extracurriculars",
-                        "provinces",
-                        "quizplays",
-                        "formsubmissions",
-                        "withdraws",
-                        "attendances",
-                        "quizsessions",
-                        "packagequestions",
-                        "accesses",
-                        "users",
-                        "exams",
-                        "cities",
-                        "majors",
-                        "password",
-                        "examtypes",
-                        "agendas",
-                        "subjects",
-                        "chatrooms",
-                        "districts",
-                        "reports",
-                        "assigmentsubmissions",
-                        "schools",
-                        "documents",
-                        "classrooms",
-                        "notifications",
-                        "announcements",
-                        "meetings",
-                        "chats",
+
                     ].reduce((o, key) => ({ ...o, [key]: relayStylePagination() }), {}),
                 },
             },
