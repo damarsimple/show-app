@@ -3,8 +3,14 @@ import { Box, Chip, Typography, IconButton } from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { Show } from "../type";
 
-export default function ShowBox({ potrait }: { potrait?: boolean }) {
+
+interface ShowBoxProP extends Show {
+  potrait?: Boolean
+}
+
+export default function ShowBox({ name, potrait, image_potrait, image_wide }: ShowBoxProP) {
   const [onHover, setOnHover] = useState(false);
   const { push } = useRouter();
   return (
@@ -25,7 +31,7 @@ export default function ShowBox({ potrait }: { potrait?: boolean }) {
         }}
       >
         <Image
-          src={"/appbanner.jpg"}
+          src={potrait ? image_potrait : image_wide}
           layout="fill"
           className={onHover ? "darken" : undefined}
         />
@@ -43,7 +49,7 @@ export default function ShowBox({ potrait }: { potrait?: boolean }) {
               <Chip label="Action" variant="outlined" />
             </Box>
 
-            <Typography>SPIDER NO WAY HOME</Typography>
+            <Typography>{name}</Typography>
             <IconButton color="error" onClick={() => push("/show/1")}>
               <PlayArrow />
             </IconButton>

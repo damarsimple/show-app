@@ -16,6 +16,9 @@ import { PlaylistAdd } from "@mui/icons-material";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade } from "swiper";
 import ShowBox from "../components/ShowBox";
+
+import { useQuery, gql } from "@apollo/client";
+import { Show } from "../type";
 // import Swiper core and required modules
 import SwiperCore, { Pagination, Navigation } from "swiper";
 import { useRouter } from "next/router";
@@ -26,6 +29,25 @@ SwiperCore.use([Pagination, Navigation]);
 export default function Index() {
   const [modalOpened, setModalOpened] = useState(false);
   const { push } = useRouter();
+
+  const { data: { shows } = {} } = useQuery<{ shows: Show[] }>(gql`
+  query Shows {
+  shows {
+    id
+    name
+    description
+    image_potrait
+    image_wide
+    rating
+    year
+    genres {
+      id
+      name
+    }
+  }
+}
+  `)
+
   return (
     <Box>
       <Modal open={modalOpened} onClose={() => setModalOpened(false)}>
@@ -165,9 +187,9 @@ export default function Index() {
               onSlideChange={() => console.log("slide change")}
               onSwiper={(swiper) => console.log(swiper)}
             >
-              {[...Array(10)].map((_, i) => (
+              {shows?.map((d, i) => (
                 <SwiperSlide key={i}>
-                  {x % 2 == 0 ? <ShowBox /> : <ShowBox potrait />}
+                  {x % 2 == 0 ? <ShowBox {...d} /> : <ShowBox {...d} potrait />}
                 </SwiperSlide>
               ))}
             </Swiper>

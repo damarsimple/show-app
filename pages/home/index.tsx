@@ -15,10 +15,13 @@ import Image from "next/image";
 import { PlaylistAdd } from "@mui/icons-material";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { EffectFade } from "swiper";
-import ShowBox from "../../components/ShowBox";
+
+import { useQuery, gql } from "@apollo/client";
 // import Swiper core and required modules
 import SwiperCore, { Pagination, Navigation } from "swiper";
 import { useRouter } from "next/router";
+import ShowBox from "../../components/ShowBox";
+import { Show } from "../../type";
 
 // install Swiper modules
 SwiperCore.use([Pagination, Navigation]);
@@ -26,6 +29,25 @@ SwiperCore.use([Pagination, Navigation]);
 export default function Index() {
   const [modalOpened, setModalOpened] = useState(false);
   const { push } = useRouter();
+
+  const { data: { shows } = {} } = useQuery<{ shows: Show[] }>(gql`
+  query Shows {
+  shows {
+    id
+    name
+    description
+    image_potrait
+    image_wide
+    rating
+    year
+    genres {
+      id
+      name
+    }
+  }
+}
+  `)
+
   return (
     <Box>
       <Modal open={modalOpened} onClose={() => setModalOpened(false)}>
@@ -96,7 +118,7 @@ export default function Index() {
         sx={{
           height: "90vh",
           background:
-            "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 90%), linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/appbanner.jpg')",
+            "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 90%), linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('./appbanner.jpg')",
           backgroundSize: "cover",
           display: "flex",
         }}
@@ -165,9 +187,9 @@ export default function Index() {
               onSlideChange={() => console.log("slide change")}
               onSwiper={(swiper) => console.log(swiper)}
             >
-              {[...Array(10)].map((_, i) => (
+              {shows?.map((d, i) => (
                 <SwiperSlide key={i}>
-                  {x % 2 == 0 ? <ShowBox /> : <ShowBox potrait />}
+                  {x % 2 == 0 ? <ShowBox {...d} /> : <ShowBox {...d} potrait />}
                 </SwiperSlide>
               ))}
             </Swiper>
