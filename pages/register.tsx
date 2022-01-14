@@ -318,7 +318,7 @@ export default function SignInSide() {
                   </Typography>
                   <TextField label="Search Genres" variant="standard" />
                   <Box>
-                    {genres?.filter((e) => selectedGenres.includes(e)).map(e => (
+                    {genres?.filter((e) => !selectedGenres.includes(e)).map(e => (
                       <Chip
                         key={e.id}
                         variant="outlined"
