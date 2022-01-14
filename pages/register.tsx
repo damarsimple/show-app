@@ -1,3 +1,4 @@
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { Add, PlusOne, Star } from "@mui/icons-material";
 import {
   Grid,
@@ -27,13 +28,45 @@ import {
 import { useRouter } from "next/router";
 import { FormEvent, useState, Fragment } from "react";
 import { Copyright } from "../components/Copyright";
+import { useAuthStore } from "../stores/auth";
+import { useUserStore } from "../stores/user";
+import { Auth, Genre } from "../type";
 
 const steps = ["Account Information", "Subscription", "Customization"];
 
 export default function SignInSide() {
+  const { setUser } = useUserStore();
+  const { setToken } = useAuthStore();
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [errorInput, setErrorInput] = useState<string[]>([]);
+  const { data: { genres } = {} } = useQuery<{
+    genres: Genre[]
+  }>(gql`
+  query Genres {
+  genres {
+    id
+    name
+  }
+}
+  `);
+
+  const [handleRegister, { loading }] = useMutation<{ register: Auth }>(gql`
+  mutation Mutation($username: String!, $email: String!, $password: String!, $plan: PLAN!, $genres: [Int]!) {
+  register(username: $username, email: $email, password: $password, plan: $plan, genres: $genres) {
+    token
+    status
+    message
+    user {
+      id
+      username
+      email
+      plan
+    }
+  }
+}
+  `)
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     setErrorMessage("");
     setErrorInput([]);
@@ -66,7 +99,24 @@ export default function SignInSide() {
   const { push } = useRouter();
   const next = () => {
     if (steps.length - 1 == activeStep) {
-      push("/home");
+
+      handleRegister({}).then(({ data }) => {
+
+        if (!data) return;
+
+        const { register } = data;
+
+        if (register.status) {
+          setUser(register.user);
+          setToken(register.token ?? "");
+          push("/home");
+        } else {
+          setErrorMessage(register.message);
+        }
+
+
+      })
+
       return;
     }
 
@@ -74,6 +124,8 @@ export default function SignInSide() {
   };
 
   const [activeStep, setActiveStep] = useState(0);
+
+  const [selectedGenres, setSelectedGenres] = useState<Genre[]>([]);
 
   return (
     <Grid container component="main" sx={{ height: "100vh" }}>
@@ -256,12 +308,18 @@ export default function SignInSide() {
                   </Typography>
                   <TextField label="Search Genres" variant="standard" />
                   <Box>
-                    <Chip
-                      variant="outlined"
-                      label="Action"
-                      onDelete={() => {}}
-                      deleteIcon={<Add />}
-                    />
+                    {genres?.filter((e) => selectedGenres.includes(e)).map(e => (
+                      <Chip
+                        key={e.id}
+                        variant="outlined"
+                        label="Action"
+                        onDelete={() => {
+                          setSelectedGenres([e, ...selectedGenres])
+                        }}
+                        deleteIcon={<Add />}
+                      />
+                    ))}
+
                   </Box>
                   <Typography component="h1" variant="h5">
                     Your favorite genre
@@ -271,10 +329,22 @@ export default function SignInSide() {
                     <Chip
                       variant="outlined"
                       label="Action"
-                      onDelete={() => {}}
+                      onDelete={() => { }}
                     />
+                    {selectedGenres?.map(e => (
+                      <Chip
+                        key={e.id}
+                        variant="outlined"
+                        label="Action"
+                        onDelete={() => {
+                          setSelectedGenres(selectedGenres.filter(e => e !== e))
+                        }}
+                        deleteIcon={<Add />}
+                      />
+                    ))}
+
                   </Box>
-                  <Button variant="contained" onClick={next}>
+                  <Button variant="contained" onClick={next} disabled={loading}>
                     FINISH
                   </Button>
                 </Box>
