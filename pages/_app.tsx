@@ -61,6 +61,8 @@ const pages = [
 ];
 const settings = ["Admin", "Logout"];
 
+const RENDER_EXCEPT = ["/login", "/register"];
+
 function MyApp({ Component, pageProps }: AppProps) {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
@@ -103,12 +105,12 @@ function MyApp({ Component, pageProps }: AppProps) {
     setTransparent(scrolled < 0.1);
   };
 
-  const { push } = useRouter();
+  const { push, pathname } = useRouter();
 
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ backgroundColor: "black", minHeight: "100vh" }}>
-        {show && (
+        {!RENDER_EXCEPT.includes(pathname) && show && (
           <AppBar
             position="fixed"
             sx={{
